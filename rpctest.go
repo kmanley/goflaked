@@ -11,7 +11,7 @@ func main() {
 
 	n := NewNode("127.0.0.1:10001")
 	fmt.Println("new node created")
-	time.Sleep(3 * time.Second)
+	time.Sleep(30 * time.Second)
 
 	fmt.Println("Killing it")
 	close(n.StopChan)
@@ -24,18 +24,19 @@ type Node struct {
 	StopChan chan struct{}
 }
 
-func (n *Node) DoNothing(_ *struct{}, _ *struct{}) error {
+func (n *Node) DoNothing(_ *struct{}, reply *int) error {
+        *reply = 5
 	return nil
 }
 
-func NewNode(self string) *Node {
+func NewNode(addr string) *Node {
 
 	n := Node{make(chan struct{})}
 	server := NewServer()
 	if err := server.Register(&n); err != nil {
 		panic(err)
 	}
-	listener, err := net.Listen("tcp", self)
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		panic(err)
 	}
@@ -69,4 +70,3 @@ func (srv Server) Serve(l net.Listener) error {
 func NewServer() *Server {
 	return &Server{Server: rpc.NewServer()}
 }
-
